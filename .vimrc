@@ -221,3 +221,6 @@ map <Leader>aa :Ack<space>
 " \a%: search for current file name by accessing the % (filename) register and
 " removing the path
 map <Leader>a% :Ack <C-r>=expand('%:t')<CR><CR>
+
+" get rid of marks
+let g:showmarks_enable = 0
