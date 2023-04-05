@@ -117,10 +117,20 @@ if ! shopt -oq posix; then
 fi
 
 parse_git_branch() {
-     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+
+    CURR_BRANCH="$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/')"
+
+    if [[ -z "$CURR_BRANCH" ]]; then
+        return
+    fi
+
+    GIT_MSG="$CURR_BRANCH"
+
+    echo "$GIT_MSG"
+
 }
 
-export PS1="$PS1\[\033[33m\]\$(parse_git_branch)\[\033[00m\] "
+export PS1="$PS1\033[33m\$(parse_git_branch)\033[00m "
 
 set -o vi
 export VISUAL=vim
@@ -144,3 +154,6 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+export PATH=$PATH:/usr/local/go/bin
+
+. /home/cowley/venv/default/bin/activate

@@ -34,7 +34,7 @@ Plugin 'tpope/vim-repeat'
 Plugin 'davidhalter/jedi-vim'
 
 " python folding
-Plugin 'tmhedberg/SimpylFold'
+"Plugin 'tmhedberg/SimpylFold'
 
 " ack search tool
 Plugin 'mileszs/ack.vim'
@@ -63,6 +63,9 @@ Plugin 'vim-scripts/mru.vim'
 " aka zencoding:
 Plugin 'mattn/emmet-vim'
 
+" Spell check
+Plugin 'kamykn/spelunker.vim'
+
 call vundle#end()
 
 
@@ -84,6 +87,8 @@ set expandtab
 set incsearch
 " highlight search results
 set hlsearch
+" case insensitive IFF search string is all lower case
+set smartcase
 
 " number of lines to keep below/above cursor, ie scroll when cursor gets
 " within 10 spaces top/bottom of screen
