@@ -57,9 +57,9 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\] \[\033[01;36m\]\w\[\033[00m\]'
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;36m\]\w\[\033[00m\]'
 else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h \w'
+    PS1='${debian_chroot:+($debian_chroot)}\w'
 fi
 unset color_prompt force_color_prompt
 
@@ -116,21 +116,34 @@ if ! shopt -oq posix; then
   fi
 fi
 
+VIRTUAL_ENV_DISABLE_PROMPT=true
+
 parse_git_branch() {
 
     CURR_BRANCH="$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/')"
+    CURR_BRANCH=$(echo "$CURR_BRANCH" | xargs)
 
     if [[ -z "$CURR_BRANCH" ]]; then
         return
     fi
 
-    GIT_MSG="$CURR_BRANCH"
+    GIT_MSG=" git:$CURR_BRANCH"
 
     echo "$GIT_MSG"
 
 }
 
-export PS1="$PS1\033[33m\$(parse_git_branch)\033[00m "
+parse_venv() {
+
+    if [[ -z "$VIRTUAL_ENV" ]]; then
+        return
+    fi
+
+    echo -e " env:($(basename $VIRTUAL_ENV))"
+
+}
+
+export PS1="$PS1\[\033[1;33m\]\$(parse_git_branch)\[\033[0;00m\]\[\033[1;32m\]\$(parse_venv)\[\033[0;00m\] "
 
 set -o vi
 export VISUAL=vim
@@ -155,5 +168,6 @@ unset __conda_setup
 # <<< conda initialize <<<
 
 export PATH=$PATH:/usr/local/go/bin
+
 
 . /home/cowley/venv/default/bin/activate
