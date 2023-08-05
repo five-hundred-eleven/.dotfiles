@@ -16,8 +16,6 @@ Plugin 'scrooloose/nerdcommenter'
 " ctrl-p file search
 Plugin 'kien/ctrlp.vim'
 
-" To get plugins from vim scripts, reference the plugin by name as it appears
-" on the site
 Plugin 'jeetsukumaran/vim-buffergator'
 
 " git integration
@@ -29,9 +27,9 @@ Plugin 'tpope/vim-surround'
 Plugin 'tpope/vim-repeat'
 
 " git autocomplete
-"Plugin 'Valloric/YouCompleteMe'
+""Plugin 'Valloric/YouCompleteMe'
 " python autocomplete
-Plugin 'davidhalter/jedi-vim'
+"Plugin 'davidhalter/jedi-vim'
 
 " python folding
 "Plugin 'tmhedberg/SimpylFold'
@@ -47,24 +45,26 @@ Plugin 'flazz/vim-colorschemes'
 " python syntax
 Plugin 'hdima/python-syntax'
 " javascript syntax
-Plugin 'jelera/vim-javascript-syntax'
-Plugin 'scrooloose/syntastic'
+"Plugin 'jelera/vim-javascript-syntax'
+"Plugin 'scrooloose/syntastic'
 
 " code tag listing: see methods and members of an object
 "Plugin 'vim-scripts/taglist-plus'
-Plugin 'majutsushi/tagbar'
+"Plugin 'majutsushi/tagbar'
 
 " status
 Plugin 'bling/vim-airline'
 
 " most recently used files
-Plugin 'vim-scripts/mru.vim'
+"Plugin 'vim-scripts/mru.vim'
 
 " aka zencoding:
-Plugin 'mattn/emmet-vim'
+"Plugin 'mattn/emmet-vim'
 
 " Spell check
 Plugin 'kamykn/spelunker.vim'
+
+set nospell
 
 call vundle#end()
 
@@ -88,6 +88,8 @@ set incsearch
 " highlight search results
 set hlsearch
 " case insensitive IFF search string is all lower case
+" Need both ignorecase and smartcase to work as expected
+set ignorecase
 set smartcase
 
 " number of lines to keep below/above cursor, ie scroll when cursor gets
@@ -97,6 +99,9 @@ set scrolloff=6
 " indentation
 set autoindent
 set smartindent
+
+" make backspace more powerful
+set backspace=indent,eol,start
 
 set t_Co=256
 " color apprentice
@@ -111,17 +116,25 @@ color atom
 "nnoremap gD :YcmCompleter GoToDeclaration<CR>
 
 " vim-jedi equivalents of YCM (see above)
-map gd :call jedi#goto()<CR>
-map gD :call jedi#goto_assignments()<CR>
+"map gd :call jedi#goto()<CR>
+"map gD :call jedi#goto_assignments()<CR>
+
+" ctags is much faster and more accurate than the above
+" gd = go definition
+map gd <C-]>
+let g:ctrlp_map = '<leader>f'
+map <leader>f :CtrlP<CR>
+map <leader>c :CtrlPTag<CR>
+map <C-p> :echo "do not use"<CR>
 
 " SimplyIFold plugin keymaps
 " fold docstrings
-let g:SimpylFold_docstring_preview = 0
+"let g:SimpylFold_docstring_preview = 0
 
-autocmd BufWinEnter *.py setlocal foldexpr=SimpylFold(v:lnum) foldmethod=expr
-autocmd BufWinLeave *.py setlocal foldexpr< foldmethod<
+"autocmd BufWinEnter *.py setlocal foldexpr=SimpylFold(v:lnum) foldmethod=expr
+"autocmd BufWinLeave *.py setlocal foldexpr< foldmethod<
 
-autocmd BufRead *.py normal zR
+"autocmd BufRead *.py normal zR
 
 " ctrlp plugin options
 " working path always stays in start directory
@@ -131,17 +144,16 @@ let g:ctrlp_root_markers = ['']
 " infinite max files
 let g:ctrlp_max_files = 0
 " near-infinite max depth. Whee!
-"
 let g:ctrlp_max_depth = 99
 " sane custom ignore
-let g:ctrlp_custom_ignore = {
-    \ 'dir':  '\.git$\|\.hg$\|\.svn$\|\.yardoc\|public\/images\|public\/system\|tmp$',
-    \ 'file': '\.exe$\|\.so$\|\.dat$\|\.jar$\|\.pyc$\|\.pdf$\|\.ipynb$\|\.ico$\|\.png$\|\.jpg$\|\.gif$\|\.bmp$\|\.svg$\|\.xcf$\|\.swf$\|\.pst$\|\.swc$\|\.zip$\|\.gz$\|\.tar$'
-    \ }
+"let g:ctrlp_custom_ignore = {
+"    \ 'dir':  '\.git$\|\.hg$\|\.svn$\|\.yardoc\|public\/images\|public\/system\|tmp$',
+"    \ 'file': '\.exe$\|\.so$\|\.dat$\|\.jar$\|\.pyc$\|\.pdf$\|\.ipynb$\|\.ico$\|\.png$\|\.jpg$\|\.gif$\|\.bmp$\|\.svg$\|\.xcf$\|\.swf$\|\.pst$\|\.swc$\|\.zip$\|\.gz$\|\.tar$'
+"    \ }
 
 
 " default indexing root is workspace
-map <C-p> :CtrlP /home/dev/workspace<CR>
+"map <C-p> :CtrlP /home/dev/workspace<CR>
 
 "autocmd ColorScheme * highlight ExtraWhitespace ctermbg=black guibg=black
 "highlight ExtraWhitespace ctermbg=black guibg=black
@@ -178,7 +190,7 @@ map <Leader>nf :NERDTreeToggle<cr>
 map <Leader>nb :NERDTreeFromBookmark<cr>
 
 " taglist-plus
-map <leader>tl :TagbarToggle<cr>
+"map <leader>tl :TagbarToggle<cr>
 
 " syntastic options: defaults
 "set statusline+=%#warningmsg#
@@ -229,3 +241,17 @@ map <Leader>a% :Ack <C-r>=expand('%:t')<CR><CR>
 
 " get rid of marks
 let g:showmarks_enable = 0
+
+" Show line on insert mode
+autocmd InsertEnter * set cursorline
+autocmd InsertLeave * set nocursorline
+
+" Change cursor on mode change
+let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+let &t_SR = "\<Esc>]50;CursorShape=2\x7"
+let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+
+" Change mode fast
+set ttimeout
+set ttimeoutlen=1
+set ttyfast
