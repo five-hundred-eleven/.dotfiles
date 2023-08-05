@@ -12,5 +12,5 @@ ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%} "
 ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg_bold[yellow]%}) %{$fg[yellow]%}✗"
 ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[yellow]%})"
 
-ZSH_THEME_VENV_PROMPT_PREFIX="%{$fg_bold[green]%}("
+ZSH_THEME_VENV_PROMPT_PREFIX="%{$fg_bold[blue]%}("
 ZSH_THEME_VENV_PROMPT_SUFFIX=")%{$reset_color%} "
