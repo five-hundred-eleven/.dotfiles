@@ -7,12 +7,12 @@ Includes my customization related to:
 
 Recommended workflow:
  1. Install oh-my-zsh
- 2. Copy cowley.zsh to ~/.oh-my-zsh/custom/
- 3. Copy cowley.zsh-theme to ~/.oh-my-zsh/custom/themes/
- 4. Copy .zshrc to your home directory
+ 2. Copy `cowley.zsh` to `~/.oh-my-zsh/custom/`
+ 3. Copy `cowley.zsh-theme` to `~/.oh-my-zsh/custom/themes/`
+ 4. Copy `.zshrc` to your home directory
  5. Install vim's Vundle plugin
- 6. Copy .vimrc to your home directory
- 7. Open vim and run :VundleUpdate to install plugins
- 8. Rename vim.py to vim and place it in your path in a higher precedence than
+ 6. Copy `.vimrc` to your home directory
+ 7. Open vim and run `:VundleUpdate` to install plugins
+ 8. Rename `vim.py` to vim and place it in your path in a higher precedence than
     the vim executable
-
+ 9. Copy `.ctags` to your home directory
