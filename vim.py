@@ -28,18 +28,7 @@ if len(sys.argv) >= 2:
 try:
     if os.path.exists(TAGS_FILE_PATH):
         os.rename(TAGS_FILE_PATH, TAGS_FILE_PATH + ".bak")
-    if os.path.exists(DOT_CTAGS_PATH):
-        with open(DOT_CTAGS_PATH, "r") as f:
-            ctags_text = f.read()
-    else:
-        print("Warning: .ctags not found!", file=sys.stderr)
-        ctags_text = ""
     ctags_cmd = [CTAGS_PATH]
-    for line in ctags_text.split("\n"):
-        line = line.strip()
-        if not line:
-            continue
-        ctags_cmd.append(line)
     proc = subprocess.Popen(
         ctags_cmd,
         stdout=subprocess.PIPE,
