@@ -5,7 +5,7 @@ if not vim.loop.fs_stat(lazypath) then
     "git",
     "clone",
     "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
+    "https://github.com/folke/lazy.nvim",
     "--branch=stable", -- latest stable release
     lazypath,
   })
@@ -13,32 +13,27 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 vim.g.mapleader = "\\" -- Make sure to set `mapleader` before lazy so your mappings are correct
-
+vim.cmd("let g:python3_host_prog = $HOME . '/venv/default/bin/python'")
 
 require("lazy").setup({
 	{
-      "folke/which-key.nvim",
+	  "folke/which-key.nvim",
 	  event = "VeryLazy",
 	  init = function()
 		vim.o.timeout = true
 		vim.o.timeoutlen = 300
 	  end,
 	  opts = {
-          theme = "onedark",
 		-- your configuration comes here
 		-- or leave it empty to use the default settings
 		-- refer to the configuration section below
 	  },
 	},
-	{ 
-        "folke/neoconf.nvim",
-        cmd = "Neoconf" 
-    },
+	{ "folke/neoconf.nvim", cmd = "Neoconf" },
 	"folke/neodev.nvim",
     {
-        "nvim-telescope/telescope.nvim",
-        tag = '0.1.3',
-        dependencies = { 'nvim-lua/plenary.nvim' },
+    'nvim-telescope/telescope.nvim', tag = '0.1.3',
+      dependencies = { 'nvim-lua/plenary.nvim' }
     },
 	"ludovicchabant/vim-gutentags",
 	"flazz/vim-colorschemes",
@@ -49,32 +44,52 @@ require("lazy").setup({
     },
 	"neovim/nvim-lspconfig",
     --"kien/ctrlp.vim",
-	{
-	  "ray-x/go.nvim",
-	  dependencies = {  -- optional packages
-		"ray-x/guihua.lua",
-		"neovim/nvim-lspconfig",
-		"nvim-treesitter/nvim-treesitter",
-	  },
-	  config = function()
-		require("go").setup()
-	  end,
-	  event = {"CmdlineEnter"},
-	  ft = {"go", 'gomod'},
-	  build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+    {
+	"ray-x/go.nvim",
+	dependencies = {  -- optional packages
+	"ray-x/guihua.lua",
+	"neovim/nvim-lspconfig",
+	"nvim-treesitter/nvim-treesitter",
 	},
-    "navarasu/onedark.nvim",
-    "deoplete-plugins/deoplete-clang",
-    "neovim/nvim-lsp",
-    "robert-oleynik/clangd-nvim",
+	config = function()
+	require("go").setup()
+	end,
+	event = {"CmdlineEnter"},
+	ft = {"go", 'gomod'},
+	build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+    },
+    --"navarasu/onedark.nvim",
     "tpope/vim-surround",
     "scrooloose/nerdcommenter",
+    { "folke/tokyonight.nvim", priority = 1000 },
+    {
+      "ray-x/go.nvim",
+      dependencies = {  -- optional packages
+        "ray-x/guihua.lua",
+        "neovim/nvim-lspconfig",
+        "nvim-treesitter/nvim-treesitter",
+      },
+      config = function()
+        require("go").setup()
+      end,
+      event = {"CmdlineEnter"},
+      ft = {"go", 'gomod'},
+      build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+    },
+    --"averms/black-nvim",
 })
+
+-- color schemes
+require("tokyonight")
+--require("tokyonight").setup({})
+vim.o.background = "dark"
+vim.cmd("colorscheme tokyonight-night")
+
 
 require("telescope").setup {
   extensions = {
     file_browser = {
-      theme = "onedark",
+      --theme = "onedark",
       -- disables netrw and use telescope-file-browser in its place
       hijack_netrw = true,
     },
@@ -105,21 +120,57 @@ require("telescope").setup {
 
 
 local builtin = require('telescope.builtin')
+local mytags = function()
+    -- this should always exist because of gutentags
+    local tagspath = vim.fn.getcwd() .. "/tags"
+    return builtin.tags({ ctags_file = tagspath })
+end
 local file_browser = require('telescope').extensions.file_browser.file_browser
+local myfilebrowser = function()
+    local opts = { path = "%:p:h", select_buffer = true }
+    return file_browser(opts)
+end
 vim.keymap.set('n', '<leader>f', builtin.find_files, {})
 vim.keymap.set('n', '<leader>g', builtin.live_grep, {})
 vim.keymap.set('n', '<leader>b', builtin.buffers, {})
 vim.keymap.set('n', '<leader>h', builtin.help_tags, {})
-vim.keymap.set('n', '<leader>n', ":Telescope file_browser path=%:p:h select_buffer=true<CR>", {})
+vim.keymap.set('n', '<leader>c', mytags, {})
+vim.keymap.set('n', '<leader>n', myfilebrowser, {})
 --vim.keymap.set('n', '<leader>n', file_browser, {})
 --vim.keymap.set('n', '<leader>c', ":CtrlPTag<CR>", {})
 --vim.keymap.set('n', 'gd', ":tag <C-r><C-w><CR>", {})
 --vim.keymap.set('n', 'gD', ":tselect <C-r><C-w>", {})
 
 -- Setup language servers.
-require('lspconfig').pyright.setup({ theme = "onedark" })
---require('lspconfig').jedi_language_server.setup{}
---local lspconfig = require('lspconfig')
+require('lspconfig').pyright.setup{
+    theme = "tokyonight-night"
+}
+vim.api.nvim_create_autocmd("BufWritePost", {
+  pattern = "*.py",
+  callback = function(ev)
+      local cwd = vim.fn.getcwd()
+      local filepath = cwd .. "/" .. ev.file
+      local isort_cmd = 'python -m isort "' .. filepath .. '" --profile=black'
+      local black_cmd = 'python -m black "' .. filepath .. '"'
+      --print(isort_cmd)
+      vim.fn.system(isort_cmd)
+      --print(black_cmd)
+      vim.fn.system(black_cmd)
+      vim.cmd "e"
+  end,
+  --group = format_sync_grp,
+})
+
+local format_sync_grp = vim.api.nvim_create_augroup("GoFormat", {})
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*.go",
+  callback = function()
+   require('go.format').goimport()
+  end,
+  group = format_sync_grp,
+})
+require("go").setup{}
+require("lspconfig").gopls.setup{}
 
 
 -- Global mappings.
@@ -141,8 +192,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
     -- Buffer local mappings.
     -- See `:help vim.lsp.*` for documentation on any of the below functions
     local opts = { buffer = ev.buf }
-    --vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-    --vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
     vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
     vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
     vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
@@ -161,35 +212,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
-require("lspconfig").gopls.setup({ theme = "onedark" })
-
-local format_sync_grp = vim.api.nvim_create_augroup("GoFormat", {})
-vim.api.nvim_create_autocmd("BufWritePre", {
-      pattern = "*.go",
-      callback = function()
-       require('go.format').gofmt()
-      end,
-      group = format_sync_grp,
-})
-
---local clangd_nvim = require('clangd_nvim')
-
---require('nvim_lsp').clangd.setup{
-    --capabilities = {
-        --textDocument = {
-            --semanticHighlightingCapabilities = {
-                --semanticHighlighting = true
-            --}
-        --}
-    --},
-    --on_init = clangd_nvim.on_init
---}
-
-local set = vim.opt
-
 -- start of my own options
--- color schemes
-vim.colorscheme = "onedark"
 -- spellcheck
 vim.cmd "setlocal spell spelllang=en_us"
 vim.cmd "hi clear SpellBad"
@@ -197,12 +220,15 @@ vim.cmd "hi SpellBad cterm=underline"
 -- show line on insert mode
 vim.cmd "autocmd InsertEnter * set cursorline"
 vim.cmd "autocmd InsertLeave * set nocursorline"
+
+local set = vim.opt
 set.ttimeout = true
 set.ttimeoutlen = 1
 set.ttyfast = true
 -- basics
 set.number = true
 set.tabstop = 4
+set.softtabstop = 4
 set.shiftwidth = 4
 set.expandtab = true
 -- instant search
@@ -212,23 +238,48 @@ set.hlsearch = true
 -- need both of the following for smartcase to work
 set.ignorecase = true
 set.smartcase = true
+-- avoid frustrations
+set.autoread = true
 -- autoindent works weirdly sometimes
 -- set.autoindent = true
 vim.keymap.set("n", "gtl", ":tabn<cr>")
 vim.keymap.set("n", "gth", ":tabp<cr>")
 vim.keymap.set("n", "gt0", ":tabfirst<cr>")
-vim.keymap.set("n", "gb", ":bprevious<cr>")
 -- move tabs with gt<S-motion>
 vim.keymap.set("n", "gtL", ":execute 'silent! tabmove ' . tabpagenr()<cr>")
 vim.keymap.set("n", "gtH", ":execute 'silent! tabmove ' . (tabpagenr()-2)<cr>")
 -- new tab
 vim.keymap.set("n", "gtn", ":tabedit<cr>")
+-- previous tab
+vim.keymap.set("n", "gb", ":bprevious<cr>")
 -- switch windows using g<movement> rather than <C-W><movement>
 vim.keymap.set("n", "gwh", "<C-W>h")
 vim.keymap.set("n", "gwl", "<C-W>l")
 vim.keymap.set("n", "gwj", "<C-W>j")
 vim.keymap.set("n", "gwk", "<C-W>k")
 -- tags
-vim.keymap.set("n", "<leader>c", ":tjump")
--- scroll before hitting edge of screen
-set.scrolloff = 6
+--vim.keymap.set("n", "<leader>c", ":lt ")
+
+--local deltagsoffile = function(file)
+    --local cwd = vim.fn.getcwd()
+    --local tagpath = cwd .. "/tags"
+    --local frelative = vim.fn.substitute(file, cwd .. "/", "", "")
+    --frelative = vim.fn.escape(frelative, "./")
+    --local cmd = 'sed -i "/' .. frelative .. '/d" "' .. tagpath .. '"'
+    --vim.fn.system(cmd)
+--end
+
+--vim.api.nvim_create_autocmd(
+  --{"BufWritePost"},
+  --{
+    --pattern = {"*.py", "*.go"},
+    --callback = function(ev)
+      ----print(string.format('event fired: %s', vim.inspect(ev)))
+      --local f = ev.file
+      --deltagsoffile(f)
+      --local tagpath = vim.fn.getcwd() .. "/tags"
+      --local cmd = 'ctags -a -f "' .. tagpath .. '" "' .. f .. '"'
+      --vim.fn.system(cmd)
+    --end
+  --}
+--)
