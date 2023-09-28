@@ -101,3 +101,27 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 set -o vi
+
+source $HOME/venv/default/bin/activate
+PATH=$PATH:/home/cowley/Downloads/go/bin
+PATH=$PATH:$HOME/go/bin
+export PATH
+
+TRAPWINCH() {
+  zle && { zle reset-prompt; zle -R }
+}
+
+function Zml2ZV9vbmVfb25lX2Nz {
+    dirfile="$HOME/directories.txt"
+    if ! [ -f $dirfile ] || test $(find $dirfile -mmin +720)
+    then
+        find $HOME -type d -not -path '*/.*' 1> $dirfile 2>/dev/null
+    fi
+    cd $(cat $dirfile | fzf)
+    zle reset-prompt
+}
+zle -N 'Zml2ZV9vbmVfb25lX2Nz'
+bindkey -M vicmd '\\f' 'Zml2ZV9vbmVfb25lX2Nz'
+alias '\f'='Zml2ZV9vbmVfb25lX2Nz'
+
+TRAPWINCH
