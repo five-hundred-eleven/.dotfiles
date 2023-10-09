@@ -45,18 +45,18 @@ require("lazy").setup({
 	"neovim/nvim-lspconfig",
     --"kien/ctrlp.vim",
     {
-	"ray-x/go.nvim",
-	dependencies = {  -- optional packages
-	"ray-x/guihua.lua",
-	"neovim/nvim-lspconfig",
-	"nvim-treesitter/nvim-treesitter",
-	},
-	config = function()
-	require("go").setup()
-	end,
-	event = {"CmdlineEnter"},
-	ft = {"go", 'gomod'},
-	build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+        "ray-x/go.nvim",
+        dependencies = {  -- optional packages
+        "ray-x/guihua.lua",
+        "neovim/nvim-lspconfig",
+        "nvim-treesitter/nvim-treesitter",
+        },
+        config = function()
+        require("go").setup()
+        end,
+        event = {"CmdlineEnter"},
+        ft = {"go", 'gomod'},
+        build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
     },
     --"navarasu/onedark.nvim",
     "tpope/vim-surround",
@@ -172,6 +172,8 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 require("go").setup{}
 require("lspconfig").gopls.setup{}
 
+require("lspconfig").ccls.setup{}
+
 
 -- Global mappings.
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -240,6 +242,7 @@ set.ignorecase = true
 set.smartcase = true
 -- avoid frustrations
 set.autoread = true
+set.scrolloff = 6
 -- autoindent works weirdly sometimes
 -- set.autoindent = true
 vim.keymap.set("n", "gtl", ":tabn<cr>")
@@ -252,6 +255,7 @@ vim.keymap.set("n", "gtH", ":execute 'silent! tabmove ' . (tabpagenr()-2)<cr>")
 vim.keymap.set("n", "gtn", ":tabedit<cr>")
 -- previous tab
 vim.keymap.set("n", "gb", ":bprevious<cr>")
+vim.keymap.set("n", "gn", ":bnext<cr>")
 -- switch windows using g<movement> rather than <C-W><movement>
 vim.keymap.set("n", "gwh", "<C-W>h")
 vim.keymap.set("n", "gwl", "<C-W>l")
