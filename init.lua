@@ -78,6 +78,7 @@ require("lazy").setup({
     },
     --"averms/black-nvim",
     "tpope/vim-fugitive",
+    "gsuuon/llm.nvim",
 })
 
 -- color schemes
@@ -288,3 +289,151 @@ vim.keymap.set("n", "gwk", "<C-W>k")
     --end
   --}
 --)
+
+--require('tabnine').setup({
+  --disable_auto_comment=true,
+  --accept_keymap="<C-]>",
+  --dismiss_keymap = "<C-[>",
+  --debounce_ms = 800,
+  --suggestion_color = {gui = "#808080", cterm = 244},
+  --exclude_filetypes = {"TelescopePrompt", "NvimTree"},
+  --log_file_path = nil, -- absolute path to Tabnine log file
+--})
+
+--require('llm.providers.openai').initialize({
+  --url = "http://localhost:8515/",
+  --max_tokens = 120,
+  --temperature = 0.6,
+  --model = "ggml-gpt4all-j.bin",
+--})
+
+-- credit: https://thevaluable.dev/vim-create-text-objects/
+function select_indent()
+    local start_indent = vim.fn.indent(vim.fn.line('.'))
+    local blank_line_pattern = '^%s*$'
+
+    if string.match(vim.fn.getline('.'), blank_line_pattern) then
+        return
+    end
+
+    if vim.v.count > 0 then
+        start_indent = start_indent - vim.o.shiftwidth * (vim.v.count - 1)
+        if start_indent < 0 then
+            start_indent = 0
+        end
+    end
+
+    local prev_line = vim.fn.line('.') - 1
+    local prev_blank_line = function(line) return string.match(vim.fn.getline(line), blank_line_pattern) end
+    while prev_line > 0 and (prev_blank_line(prev_line) or vim.fn.indent(prev_line) >= start_indent) do
+        vim.cmd('-')
+        prev_line = vim.fn.line('.') - 1
+    end
+    vim.cmd('-')
+
+    vim.cmd('normal! 0V')
+
+    local next_line = vim.fn.line('.') + 1
+    local next_blank_line = function(line) return string.match(vim.fn.getline(line), blank_line_pattern) end
+    local last_line = vim.fn.line('$')
+    while next_line <= last_line and (next_blank_line(next_line) or vim.fn.indent(next_line) >= start_indent) do
+        vim.cmd('+')
+        next_line = vim.fn.line('.') + 1
+    end
+    local buf = vim.api.nvim_get_current_buf()
+    vim.api.nvim_buf_set_mark(buf, "<", prev_line, 0, {})
+    vim.api.nvim_buf_set_mark(buf, ">", next_line, 0, {})
+    vim.cmd('+')
+end
+
+vim.keymap.set("n", "vip", select_indent, nil)
+
+local function get_visual_selection()
+    local buf = vim.api.nvim_get_current_buf()
+    local line_start = vim.api.nvim_buf_get_mark(buf, "<")[1]
+    if line_start > 1 then
+        line_start = line_start - 1
+    end
+    local line_stop = vim.api.nvim_buf_get_mark(buf, ">")[1]
+    if line_stop > 1 then
+        line_stop = line_stop - 1
+    end
+    local lines = vim.api.nvim_buf_get_lines(buf, line_start, line_stop, true)
+    local result = ""
+    for _, line in pairs(lines) do
+        result = result .. line .. "\n"
+    end
+    return result
+end
+
+local function display_string_in_buf(s)
+    local lines = {}
+    for line in string.gmatch(s .. "\n", "(.-)\n") do
+        line = line:gsub("\r", "")
+        table.insert(lines, line);
+    end
+    vim.cmd('vsplit')
+    local win = vim.api.nvim_get_current_win()
+    local buf = vim.api.nvim_create_buf(true, true)
+    vim.api.nvim_win_set_buf(win, buf)
+    vim.api.nvim_buf_set_lines(buf, 0, 0, true, lines)
+end
+
+local curl = require("llm.curl")
+function call_localai(model, prompt, temperature)
+    display_string_in_buf(prompt)
+    local opts = {
+        url = "http://localhost:8515/chat/completions",
+        method = "POST",
+        headers = { [ "Content-Type" ] = "application/json" },
+        body = { 
+            model = model,
+            messages = { { role = "user", content = prompt }, },
+            temperature = temperature,
+        },
+    }
+    local function on_complete(stdout)
+        local out_json = vim.json.decode(stdout)
+        local response_str = out_json["choices"][1]["message"]["content"]
+        display_string_in_buf(response_str)
+    end
+    local function on_error(stderr)
+        print("Error: " .. stderr)
+    end
+    curl.request(opts, on_complete, on_error)
+end
+
+function localai_review(args)
+    local visual_selection = get_visual_selection()
+    local prompt = "Please review the following code:\n```\n" .. visual_selection .. "\n```\n"
+    call_localai("WizardCoder-15B-1.0.ggmlv3.q4_1.bin", prompt, 0.1)
+end
+
+function localai_write_code(args)
+    local visual_selection = get_visual_selection()
+    local language = ""
+    if vim.bo.filetype == "lua" then
+        language = "lua"
+    elseif vim.bo.filetype == "python" then
+        language = "python"
+    elseif vim.bo.filetype == "c" or vim.bo.filetype == "h" then
+        language = "c"
+    elseif vim.bo.filetype == "cpp" or vim.bo.filetype == "hpp" then
+        language = "c++"
+    elseif vim.bo.filetype == "go" then
+        language = "golang"
+    elseif vim.bo.filetype == "sh" then
+        language = "bash"
+    else
+        print("Could not determine language!")
+        return
+    end
+    local prompt = "Please write code in " .. language .. " that does the following:\n" .. visual_selection
+    call_localai("WizardCoder-15B-1.0.ggmlv3.q4_1.bin", prompt, 0.2)
+end
+
+vim.keymap.set("n", "<leader>ar", localai_review, nil)
+vim.keymap.set("v", "<leader>ar", localai_review, nil)
+
+vim.keymap.set("n", "<leader>ac", localai_write_code, nil)
+vim.keymap.set("v", "<leader>ac", localai_write_code, nil)
