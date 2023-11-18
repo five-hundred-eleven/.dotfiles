@@ -355,9 +355,6 @@ local function get_visual_selection()
         line_start = line_start - 1
     end
     local line_stop = vim.api.nvim_buf_get_mark(buf, ">")[1]
-    if line_stop > 1 then
-        line_stop = line_stop - 1
-    end
     local lines = vim.api.nvim_buf_get_lines(buf, line_start, line_stop, true)
     local result = ""
     for _, line in pairs(lines) do
@@ -405,7 +402,7 @@ end
 
 function localai_review(args)
     local visual_selection = get_visual_selection()
-    local prompt = "Please review the following code:\n```\n" .. visual_selection .. "\n```\n"
+    local prompt = "Please review the following code:\n```\n" .. visual_selection .. "```"
     call_localai("WizardCoder-15B-1.0.ggmlv3.q4_1.bin", prompt, 0.1)
 end
 
