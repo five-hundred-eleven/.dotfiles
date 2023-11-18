@@ -390,9 +390,20 @@ function call_localai(model, prompt, temperature)
         },
     }
     local function on_complete(stdout)
+        -- decode response
         local out_json = vim.json.decode(stdout)
+        -- get content of response
+        -- TODO make this more dynamic
         local response_str = out_json["choices"][1]["message"]["content"]
+        -- display content of response
         display_string_in_buf(response_str)
+        -- apply formatting
+        local line = vim.fn.line("$")
+        while line > 0 do
+            vim.cmd(tostring(line))
+            vim.cmd.normal("gqq")
+            line = line - 1
+        end
     end
     local function on_error(stderr)
         print("Error: " .. stderr)
