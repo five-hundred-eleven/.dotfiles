@@ -121,23 +121,24 @@ require("telescope").setup {
 -- })
 
 
-local builtin = require('telescope.builtin')
+local telescope_builtin = require('telescope.builtin')
 local mytags = function()
     -- this should always exist because of gutentags
     local tagspath = vim.fn.getcwd() .. "/tags"
-    return builtin.tags({ ctags_file = tagspath })
+    return telescope_builtin.tags({ ctags_file = tagspath })
 end
 local file_browser = require('telescope').extensions.file_browser.file_browser
 local myfilebrowser = function()
     local opts = { path = "%:p:h", select_buffer = true }
     return file_browser(opts)
 end
-vim.keymap.set('n', '<leader>f', builtin.find_files, {})
-vim.keymap.set('n', '<leader>g', builtin.live_grep, {})
-vim.keymap.set('n', '<leader>b', builtin.buffers, {})
-vim.keymap.set('n', '<leader>h', builtin.help_tags, {})
+vim.keymap.set('n', '<leader>f', telescope_builtin.find_files, {})
+vim.keymap.set('n', '<leader>g', telescope_builtin.live_grep, {})
+vim.keymap.set('n', '<leader>b', telescope_builtin.buffers, {})
+vim.keymap.set('n', '<leader>h', telescope_builtin.help_tags, {})
 vim.keymap.set('n', '<leader>c', mytags, {})
 vim.keymap.set('n', '<leader>n', myfilebrowser, {})
+vim.keymap.set('n', '<leader>r', telescope_builtin.lsp_references, {})
 --vim.keymap.set('n', '<leader>n', file_browser, {})
 --vim.keymap.set('n', '<leader>c', ":CtrlPTag<CR>", {})
 --vim.keymap.set('n', 'gd', ":tag <C-r><C-w><CR>", {})
@@ -145,7 +146,14 @@ vim.keymap.set('n', '<leader>n', myfilebrowser, {})
 
 -- Setup language servers.
 require('lspconfig').pyright.setup{
-    theme = "tokyonight-night"
+    theme = "tokyonight-night",
+    settings = {
+        python = {
+            analysis = {
+                diagnosticMode = 'workspace',
+            },
+        },
+    },
 }
 vim.api.nvim_create_autocmd("BufWritePost", {
   pattern = "*.py",
@@ -247,6 +255,8 @@ set.autoread = true
 set.scrolloff = 6
 -- autoindent works weirdly sometimes
 -- set.autoindent = true
+-- some terminal emulators mess up mouse integration- uncomment the following
+-- set.mouse = nil
 vim.keymap.set("n", "gtl", ":tabn<cr>")
 vim.keymap.set("n", "gth", ":tabp<cr>")
 vim.keymap.set("n", "gt0", ":tabfirst<cr>")
@@ -351,7 +361,7 @@ vim.keymap.set("n", "vip", select_indent, nil)
 local function get_visual_selection()
     local buf = vim.api.nvim_get_current_buf()
     local line_start = vim.api.nvim_buf_get_mark(buf, "<")[1]
-    if line_start > 1 then
+    if line_start > 0 then
         line_start = line_start - 1
     end
     local line_stop = vim.api.nvim_buf_get_mark(buf, ">")[1]

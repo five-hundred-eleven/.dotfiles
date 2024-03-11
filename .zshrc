@@ -103,7 +103,7 @@ source $ZSH/oh-my-zsh.sh
 set -o vi
 
 source $HOME/venv/default/bin/activate
-PATH=$PATH:/home/cowley/Downloads/go/bin
+PATH=$PATH:/usr/local/go/bin
 PATH=$PATH:$HOME/go/bin
 export PATH
 
@@ -113,11 +113,13 @@ TRAPWINCH() {
 
 function Zml2ZV9vbmVfb25lX2Nz {
     dirfile="$HOME/directories.txt"
-    if ! [ -f $dirfile ] || test $(find $dirfile -mmin +720)
+    #if ! [ -f $dirfile ] || test $(find $dirfile -mmin +720)
+    if ! [ -f $dirfile ]
     then
+        echo "Indexing directories..."
         find $HOME -type d -not -path '*/.*' 1> $dirfile 2>/dev/null
     fi
-    cd $(cat $dirfile | fzf)
+    cd "$(cat $dirfile | fzf)"
     zle reset-prompt
 }
 zle -N 'Zml2ZV9vbmVfb25lX2Nz'
