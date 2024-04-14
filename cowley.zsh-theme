@@ -6,6 +6,7 @@ VIRTUAL_ENV_DISABLE_PROMPT=true
 PROMPT="%(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ ) %{$fg[cyan]%}%c%{$reset_color%} "
 PROMPT+='$(git_prompt_info)'
 PROMPT+='$(venv_prompt_info)'
+PROMPT+='$(conda_prompt_info)'
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[yellow]%}("
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%} "
@@ -14,3 +15,6 @@ ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[yellow]%})"
 
 ZSH_THEME_VENV_PROMPT_PREFIX="%{$fg_bold[blue]%}("
 ZSH_THEME_VENV_PROMPT_SUFFIX=")%{$reset_color%} "
+
+ZSH_THEME_CONDA_PROMPT_PREFIX="%{$fg_bold[blue]%}("
+ZSH_THEME_CONDA_PROMPT_SUFFIX=")%{$reset_color%} "

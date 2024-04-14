@@ -40,7 +40,14 @@ require("lazy").setup({
 	"neovim/nvim-lspconfig",
     {
         "nvim-telescope/telescope-file-browser.nvim",
-        dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" }
+        dependencies = {
+            "nvim-telescope/telescope.nvim",
+            "nvim-lua/plenary.nvim",
+            {
+                "nvim-telescope/telescope-live-grep-args.nvim",
+                version = "^1.0.0",
+            },
+        }
     },
 	"neovim/nvim-lspconfig",
     --"kien/ctrlp.vim",
@@ -78,7 +85,7 @@ require("lazy").setup({
     },
     --"averms/black-nvim",
     "tpope/vim-fugitive",
-    "gsuuon/llm.nvim",
+    --"gsuuon/llm.nvim",
 })
 
 -- color schemes
@@ -87,6 +94,42 @@ require("tokyonight")
 vim.o.background = "dark"
 vim.cmd("colorscheme tokyonight-night")
 
+-- https://github.com/nvim-telescope/telescope-live-grep-args.nvim/blob/master/lua/telescope-live-grep-args/shortcuts.lua
+local get_visual = function()
+  local _, ls, cs = unpack(vim.fn.getpos("v"))
+  local _, le, ce = unpack(vim.fn.getpos("."))
+
+  ls, le = math.min(ls, le), math.max(ls, le)
+  cs, ce = math.min(cs, ce), math.max(cs, ce)
+
+  return vim.api.nvim_buf_get_text(0, ls - 1, cs - 1, le - 1, ce, {})
+end
+
+-- https://github.com/nvim-telescope/telescope-live-grep-args.nvim/blob/master/lua/telescope-live-grep-args/shortcuts.lua
+local grep_under_default_opts = {
+  postfix = " -F ",
+  quote = true,
+  trim = true,
+}
+
+-- https://github.com/nvim-telescope/telescope-live-grep-args.nvim/blob/master/lua/telescope-live-grep-args/shortcuts.lua
+local process_grep_under_text = function(value, opts)
+  opts = opts or {}
+
+  if opts.trim then
+    value = vim.trim(value)
+  end
+
+  if opts.quote then
+    value = helpers.quote(value, opts)
+  end
+
+  if opts.postfix then
+    value = value .. opts.postfix
+  end
+
+  return value
+end
 
 require("telescope").setup {
   extensions = {
@@ -122,23 +165,47 @@ require("telescope").setup {
 
 
 local telescope_builtin = require('telescope.builtin')
+local prompt = require('telescope.themes').get_dropdown({ shorten_path = true })
+local myfindfiles = function()
+    return telescope_builtin.find_files(prompt)
+end
+local mylivegrep = function()
+    return require("telescope").extensions.live_grep_args.live_grep_args(prompt)
+end
+local mylivegrep_visual_selection = function()
+    local opts = {}
+    local visual = get_visual()
+    local text = visual[1] or ""
+    text = process_grep_under_text(text, opts)
+    opts.default_text = text
+    opts = vim.tbl_extend("force", opts, prompt)
+    return require("telescope").extensions.live_grep_args.live_grep_args(opts)
+end
+local mybuffers = function()
+    return telescope_builtin.buffers(prompt)
+end
+local mylspreferences = function()
+    return telescope_builtin.lsp_references(prompt)
+end
 local mytags = function()
     -- this should always exist because of gutentags
-    local tagspath = vim.fn.getcwd() .. "/tags"
-    return telescope_builtin.tags({ ctags_file = tagspath })
+    local opts = { ctags_file = vim.fn.getcwd() .. "/tags" }
+    opts = vim.tbl_extend("force", opts, prompt)
+    return telescope_builtin.tags(opts)
 end
-local file_browser = require('telescope').extensions.file_browser.file_browser
 local myfilebrowser = function()
     local opts = { path = "%:p:h", select_buffer = true }
-    return file_browser(opts)
+    opts = vim.tbl_extend("force", opts, prompt)
+    return require('telescope').extensions.file_browser.file_browser(opts)
 end
-vim.keymap.set('n', '<leader>f', telescope_builtin.find_files, {})
-vim.keymap.set('n', '<leader>g', telescope_builtin.live_grep, {})
-vim.keymap.set('n', '<leader>b', telescope_builtin.buffers, {})
+vim.keymap.set('n', '<leader>f', myfindfiles, {})
+vim.keymap.set('n', '<leader>g', mylivegrep, {})
+vim.keymap.set('v', '<leader>g', mylivegrep_visual_selection, {})
+vim.keymap.set('n', '<leader>b', mybuffers, {})
 vim.keymap.set('n', '<leader>h', telescope_builtin.help_tags, {})
 vim.keymap.set('n', '<leader>c', mytags, {})
 vim.keymap.set('n', '<leader>n', myfilebrowser, {})
-vim.keymap.set('n', '<leader>r', telescope_builtin.lsp_references, {})
+vim.keymap.set('n', '<leader>r', mylspreferences, {})
 --vim.keymap.set('n', '<leader>n', file_browser, {})
 --vim.keymap.set('n', '<leader>c', ":CtrlPTag<CR>", {})
 --vim.keymap.set('n', 'gd', ":tag <C-r><C-w><CR>", {})
@@ -256,7 +323,7 @@ set.scrolloff = 6
 -- autoindent works weirdly sometimes
 -- set.autoindent = true
 -- some terminal emulators mess up mouse integration- uncomment the following
--- set.mouse = nil
+set.mouse = nil
 vim.keymap.set("n", "gtl", ":tabn<cr>")
 vim.keymap.set("n", "gth", ":tabp<cr>")
 vim.keymap.set("n", "gt0", ":tabfirst<cr>")
@@ -386,72 +453,72 @@ local function display_string_in_buf(s)
     vim.api.nvim_buf_set_lines(buf, 0, 0, true, lines)
 end
 
-local curl = require("llm.curl")
-function call_localai(model, prompt, temperature)
-    display_string_in_buf(prompt)
-    local opts = {
-        url = "http://localhost:8515/chat/completions",
-        method = "POST",
-        headers = { [ "Content-Type" ] = "application/json" },
-        body = { 
-            model = model,
-            messages = { { role = "user", content = prompt }, },
-            temperature = temperature,
-        },
-    }
-    local function on_complete(stdout)
-        -- decode response
-        local out_json = vim.json.decode(stdout)
-        -- get content of response
-        -- TODO make this more dynamic
-        local response_str = out_json["choices"][1]["message"]["content"]
-        -- display content of response
-        display_string_in_buf(response_str)
-        -- apply formatting
-        local line = vim.fn.line("$")
-        while line > 0 do
-            vim.cmd(tostring(line))
-            vim.cmd.normal("gqq")
-            line = line - 1
-        end
-    end
-    local function on_error(stderr)
-        print("Error: " .. stderr)
-    end
-    curl.request(opts, on_complete, on_error)
-end
+--local curl = require("llm.curl")
+--function call_localai(model, prompt, temperature)
+    --display_string_in_buf(prompt)
+    --local opts = {
+        --url = "http://localhost:8515/chat/completions",
+        --method = "POST",
+        --headers = { [ "Content-Type" ] = "application/json" },
+        --body = { 
+            --model = model,
+            --messages = { { role = "user", content = prompt }, },
+            --temperature = temperature,
+        --},
+    --}
+    --local function on_complete(stdout)
+        ---- decode response
+        --local out_json = vim.json.decode(stdout)
+        ---- get content of response
+        ---- TODO make this more dynamic
+        --local response_str = out_json["choices"][1]["message"]["content"]
+        ---- display content of response
+        --display_string_in_buf(response_str)
+        ---- apply formatting
+        --local line = vim.fn.line("$")
+        --while line > 0 do
+            --vim.cmd(tostring(line))
+            --vim.cmd.normal("gqq")
+            --line = line - 1
+        --end
+    --end
+    --local function on_error(stderr)
+        --print("Error: " .. stderr)
+    --end
+    --curl.request(opts, on_complete, on_error)
+--end
 
-function localai_review(args)
-    local visual_selection = get_visual_selection()
-    local prompt = "Please review the following code:\n```\n" .. visual_selection .. "```"
-    call_localai("WizardCoder-15B-1.0.ggmlv3.q4_1.bin", prompt, 0.1)
-end
+--function localai_review(args)
+    --local visual_selection = get_visual_selection()
+    --local prompt = "Please review the following code:\n```\n" .. visual_selection .. "```"
+    --call_localai("WizardCoder-15B-1.0.ggmlv3.q4_1.bin", prompt, 0.1)
+--end
 
-function localai_write_code(args)
-    local visual_selection = get_visual_selection()
-    local language = ""
-    if vim.bo.filetype == "lua" then
-        language = "lua"
-    elseif vim.bo.filetype == "python" then
-        language = "python"
-    elseif vim.bo.filetype == "c" or vim.bo.filetype == "h" then
-        language = "c"
-    elseif vim.bo.filetype == "cpp" or vim.bo.filetype == "hpp" then
-        language = "c++"
-    elseif vim.bo.filetype == "go" then
-        language = "golang"
-    elseif vim.bo.filetype == "sh" then
-        language = "bash"
-    else
-        print("Could not determine language!")
-        return
-    end
-    local prompt = "Please write code in " .. language .. " that does the following:\n" .. visual_selection
-    call_localai("WizardCoder-15B-1.0.ggmlv3.q4_1.bin", prompt, 0.2)
-end
+--function localai_write_code(args)
+    --local visual_selection = get_visual_selection()
+    --local language = ""
+    --if vim.bo.filetype == "lua" then
+        --language = "lua"
+    --elseif vim.bo.filetype == "python" then
+        --language = "python"
+    --elseif vim.bo.filetype == "c" or vim.bo.filetype == "h" then
+        --language = "c"
+    --elseif vim.bo.filetype == "cpp" or vim.bo.filetype == "hpp" then
+        --language = "c++"
+    --elseif vim.bo.filetype == "go" then
+        --language = "golang"
+    --elseif vim.bo.filetype == "sh" then
+        --language = "bash"
+    --else
+        --print("Could not determine language!")
+        --return
+    --end
+    --local prompt = "Please write code in " .. language .. " that does the following:\n" .. visual_selection
+    --call_localai("WizardCoder-15B-1.0.ggmlv3.q4_1.bin", prompt, 0.2)
+--end
 
-vim.keymap.set("n", "<leader>ar", localai_review, nil)
-vim.keymap.set("v", "<leader>ar", localai_review, nil)
+--vim.keymap.set("n", "<leader>ar", localai_review, nil)
+--vim.keymap.set("v", "<leader>ar", localai_review, nil)
 
-vim.keymap.set("n", "<leader>ac", localai_write_code, nil)
-vim.keymap.set("v", "<leader>ac", localai_write_code, nil)
+--vim.keymap.set("n", "<leader>ac", localai_write_code, nil)
+--vim.keymap.set("v", "<leader>ac", localai_write_code, nil)
