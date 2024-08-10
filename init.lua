@@ -251,6 +251,8 @@ require("lspconfig").gopls.setup{}
 
 require("lspconfig").ccls.setup{}
 
+require("lspconfig").rust_analyzer.setup{}
+
 
 -- Global mappings.
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -332,6 +334,8 @@ vim.keymap.set("n", "gtL", ":execute 'silent! tabmove ' . tabpagenr()<cr>")
 vim.keymap.set("n", "gtH", ":execute 'silent! tabmove ' . (tabpagenr()-2)<cr>")
 -- new tab
 vim.keymap.set("n", "gtn", ":tabedit<cr>")
+-- previous tab
+vim.keymap.set("n", "gb", ":bprevious<cr>")
 -- previous tab
 vim.keymap.set("n", "gb", ":bprevious<cr>")
 vim.keymap.set("n", "gn", ":bnext<cr>")

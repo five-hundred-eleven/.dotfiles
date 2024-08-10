@@ -102,28 +102,27 @@ source $ZSH/oh-my-zsh.sh
 
 set -o vi
 
-source $HOME/venv/default/bin/activate
-PATH=$PATH:/usr/local/go/bin
-PATH=$PATH:$HOME/go/bin
+#source $HOME/venv/default/bin/activate
+source $HOME/anaconda3/bin/activate
+conda config --set changeps1 False
+PATH="$PATH:/usr/local/go/bin"
+PATH="$PATH:$HOME/go/bin"
+PATH="$PATH:/usr/local/zig-linux-x86_64-0.13.0"
 export PATH
 
+source "$HOME/.fzf.zsh"
 TRAPWINCH() {
   zle && { zle reset-prompt; zle -R }
 }
-
-function Zml2ZV9vbmVfb25lX2Nz {
-    dirfile="$HOME/directories.txt"
-    #if ! [ -f $dirfile ] || test $(find $dirfile -mmin +720)
-    if ! [ -f $dirfile ]
-    then
-        echo "Indexing directories..."
-        find $HOME -type d -not -path '*/.*' 1> $dirfile 2>/dev/null
-    fi
-    cd "$(cat $dirfile | fzf)"
-    zle reset-prompt
-}
-zle -N 'Zml2ZV9vbmVfb25lX2Nz'
-bindkey -M vicmd '\\f' 'Zml2ZV9vbmVfb25lX2Nz'
-alias '\f'='Zml2ZV9vbmVfb25lX2Nz'
+zle -N fzf-cd-widget
+bindkey -M vicmd '\\f' fzf-cd-widget
+zle -N fzf-history-widget
+bindkey -M vicmd '/' fzf-history-widget
 
 TRAPWINCH
+export MODULAR_HOME="/home/cowley/.modular"
+export PATH="/home/cowley/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
+
+LS_COLORS=$LS_COLORS:'ow=37;42:'
+
+eval "$(zoxide init zsh)"
