@@ -2,17 +2,25 @@
 
 Includes my customization related to:
  * zsh - show Python virtual env info in prompt
- * vim - lots of plugins and custom shortcuts
+ * vim/nvim - lots of plugins and custom shortcuts
  * ctags
+ * tmux
+ * fzf
 
-Recommended workflow:
- 1. Install oh-my-zsh
+Install the following:
+ 1. zsh
+ 2. [neovim](https://github.com/neovim/neovim)
+ 3. exuberant-ctags
+ 4. [oh-my-zsh](https://ohmyz.sh/)
+ 5. [fzf](https://github.com/junegunn/fzf.git) recommended by using the git workflow
+ 6. tmux
+ 7. [tpm](https://github.com/tmux-plugins/tpm/tree/master) tmux plugin manager
+ 8. [bat](https://github.com/sharkdp/bat)
+ 9. [tmux-sessionx](https://github.com/omerxx/tmux-sessionx)
+
+Put the config files in place:
  2. Copy `cowley.zsh` to `~/.oh-my-zsh/custom/`
  3. Copy `cowley.zsh-theme` to `~/.oh-my-zsh/custom/themes/`
  4. Copy `.zshrc` to your home directory
- 5. Install vim's Vundle plugin
- 6. Copy `.vimrc` to your home directory
- 7. Open vim and run `:VundleUpdate` to install plugins
- 8. Rename `vim.py` to vim and place it in your path in a higher precedence than
-    the vim executable
- 9. Copy `.ctags` to your home directory
+ 5. Copy `init.lua` to `~/.config/nvim/`
+ 6. Copy `.tmux.conf` to your home directory
