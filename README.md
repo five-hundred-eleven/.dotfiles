@@ -19,8 +19,8 @@ Install the following:
  9. [tmux-sessionx](https://github.com/omerxx/tmux-sessionx)
 
 Put the config files in place:
- 2. Copy `cowley.zsh` to `~/.oh-my-zsh/custom/`
- 3. Copy `cowley.zsh-theme` to `~/.oh-my-zsh/custom/themes/`
- 4. Copy `.zshrc` to your home directory
- 5. Copy `init.lua` to `~/.config/nvim/`
- 6. Copy `.tmux.conf` to your home directory
+ 1. Copy `cowley.zsh` to `~/.oh-my-zsh/custom/`
+ 2. Copy `cowley.zsh-theme` to `~/.oh-my-zsh/custom/themes/`
+ 3. Copy `.zshrc` to your home directory
+ 4. Copy `init.lua` to `~/.config/nvim/`
+ 5. Copy `.tmux.conf` to your home directory
