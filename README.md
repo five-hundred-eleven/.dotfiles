@@ -17,6 +17,7 @@ Install the following:
  7. [tpm](https://github.com/tmux-plugins/tpm/tree/master) tmux plugin manager
  8. [bat](https://github.com/sharkdp/bat)
  9. [tmux-sessionx](https://github.com/omerxx/tmux-sessionx)
+ 10. [zoxide](https://github.com/ajeetdsouza/zoxide) zoxide
 
 Put the config files in place:
  1. Copy `cowley.zsh` to `~/.oh-my-zsh/custom/`

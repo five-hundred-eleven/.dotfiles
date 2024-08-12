@@ -108,6 +108,7 @@ conda config --set changeps1 False
 PATH="$PATH:/usr/local/go/bin"
 PATH="$PATH:$HOME/go/bin"
 PATH="$PATH:/usr/local/zig-linux-x86_64-0.13.0"
+PATH="$PATH:/home/cowley/.modular/pkg/packages.modular.com_mojo/bin"
 export PATH
 
 source "$HOME/.fzf.zsh"
@@ -121,8 +122,8 @@ bindkey -M vicmd '/' fzf-history-widget
 
 TRAPWINCH
 export MODULAR_HOME="/home/cowley/.modular"
-export PATH="/home/cowley/.modular/pkg/packages.modular.com_mojo/bin:$PATH"
 
 LS_COLORS=$LS_COLORS:'ow=37;42:'
 
 eval "$(zoxide init zsh)"
+export GPG_TTY=$(tty)
