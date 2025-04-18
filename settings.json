@@ -1,0 +1,48 @@
+{
+  "vim.easymotion": true,
+  "vim.incsearch": true,
+  "vim.smartcase": true,
+  "vim.useSystemClipboard": true,
+  "vim.useCtrlKeys": false,
+  "vim.hlsearch": true,
+  "vim.normalModeKeyBindingsNonRecursive": [
+    {
+      "before": ["g", "b"],
+      "commands": ["workbench.action.navigateBack"],
+      "silent": false
+    },
+    {
+      "before": ["g", "n"],
+      "commands": ["workbench.action.navigateForward"],
+      "silent": false
+    },
+    {
+      "before": ["<leader>", "g"],
+      "commands": ["workbench.action.findInFiles"],
+      "silent": false
+    },
+    {
+      "before": ["<leader>", "f"],
+      "commands": ["workbench.action.quickOpen"],
+      "silent": false
+    },
+    {
+      "before": ["<leader>", "c"],
+      "commands": ["workbench.action.gotoSymbol"]
+    },
+    {
+      "before": ["<leader>", "r"],
+      "commands": ["references-view.findReferences"],
+      "silent": false
+    },
+    {
+      "before": ["g", "d"],
+      "commands": ["editor.action.revealDefinition"],
+      "silent": false
+    },
+    {
+      "before": ["g", "t", "l"],
+      "commands": ["workbench.action.focusActiveEditorGroup"]
+    }
+  ]
+}
